@@ -46,6 +46,7 @@ class Funcionario {
 const funcionarios = [];
 let acoes = null; // edição do funcionario
 
+// usando uma função anônima no evento submit
 document.getElementById('formulario-funcionario').addEventListener('submit', (event) => {
    event.preventDefault(); // eh chamada quando clica no botão cadastrar
 
@@ -54,25 +55,24 @@ document.getElementById('formulario-funcionario').addEventListener('submit', (ev
    const cargo = document.getElementById('cargo').value;
    const salario = document.getElementById('salario').value;
 
+   // atualiza/adiciona um novo funcionário
    if (acoes) {
       acoes.setNome(nome);
       acoes.setIdade(idade);
       acoes.setCargo(cargo);
       acoes.setSalario(salario);
-
-      // Limpa a area depois de atualizar
-      acoes = null;
+      acoes = null; // limpa a área de edição após atualizar
    } else {
-      // Cria um novo funcionário na tabela
       const novoFuncionario = new Funcionario(nome, idade, cargo, salario);
       funcionarios.push(novoFuncionario);
    }
 
    atualizaTabela(); 
-   document.getElementById('formulario-funcionario').reset(); // Limpa o formulário
+   document.getElementById('formulario-funcionario').reset(); // limpa o formulário
 });
 
-function atualizaTabela() {
+// usando uma expressão lambda para atualizar a tabela
+const atualizaTabela = () => {
    const tabela = document.getElementById('tabela-funcionario').getElementsByTagName('tbody')[0];
    tabela.innerHTML = '';
 
@@ -84,33 +84,33 @@ function atualizaTabela() {
        row.insertCell(2).textContent = funcionario.getCargo();
        row.insertCell(3).textContent = funcionario.getSalario();
 
-       // Coluna de Ações
+       // coluna de ações com funções anônimas e arrow functions
        const acoesCell = row.insertCell(4);
+       
        const btnEditar = document.createElement('button');
        btnEditar.textContent = 'Editar';
-       btnEditar.onclick = function() {
-           carregarFormularioEdicao(index);
-       };
+       btnEditar.onclick = () => carregarFormularioEdicao(index); // função anônima
        acoesCell.appendChild(btnEditar);
+
        const btnExcluir = document.createElement('button');
        btnExcluir.textContent = 'Excluir';
-       btnExcluir.onclick = function() {
-           excluirFuncionario(index);
-       };
+       btnExcluir.onclick = () => excluirFuncionario(index); // função anônima
        acoesCell.appendChild(btnExcluir);
    });
 }
 
-function carregarFormularioEdicao(index) { 
+// carregar os dados do funcionário no formulário para edição
+const carregarFormularioEdicao = (index) => {
    const funcionario = funcionarios[index];
    document.getElementById('nome').value = funcionario.getNome();
    document.getElementById('idade').value = funcionario.getIdade();
    document.getElementById('cargo').value = funcionario.getCargo();
    document.getElementById('salario').value = funcionario.getSalario();
-   acoes = funcionario; // Marca o funcionário q estar sendo editado
+   acoes = funcionario; // marca o funcionário que está sendo editado
 }
 
-function excluirFuncionario(index) {
-   funcionarios.splice(index, 1); // Remove o funcionário do array
+// excluir um funcionário da lista
+const excluirFuncionario = (index) => {
+   funcionarios.splice(index, 1); // remove o funcionário da lista
    atualizaTabela(); 
 }
