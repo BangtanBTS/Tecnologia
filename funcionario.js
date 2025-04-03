@@ -6,11 +6,11 @@ class Funcionario {
        this.salario = salario;
    }
 
-   getNome() {
+   getNome() { 
        return this.nome;
    }
 
-   setNome(nome) {
+   setNome(nome) { 
        this.nome = nome;
    }
 
@@ -46,7 +46,7 @@ class Funcionario {
 const funcionarios = [];
 let acoes = null; // edição do funcionario
 
-document.getElementById('formulario-funcionario').addEventListener('submit', function(event) {
+document.getElementById('formulario-funcionario').addEventListener('submit', (event) => {
    event.preventDefault(); // eh chamada quando clica no botão cadastrar
 
    const nome = document.getElementById('nome').value;
