@@ -114,3 +114,35 @@ const excluirFuncionario = (index) => {
    funcionarios.splice(index, 1); // remove o funcionário da lista
    atualizaTabela(); 
 }
+
+//Relatorio
+const relatorioDiv = document.getElementById("relatorio");
+
+//listar todos os funcionários com salário maior que R$ 5000
+document.getElementById("btn_salarioMaiorQue5000").addEventListener("click", () => {
+   const salarioMaiorQue5000 = funcionarios.filter(funcionarios => funcionarios.getSalario() > 5000);
+   exibirRelatorio("Funcionarios com salário maior que 5000:", salarioMaiorQue5000.map(funcionarios => funcionarios.nome).join("<br>"))
+})
+
+//mostrar a média salarial dos funcionários
+document.getElementById("btn_mediaSalarial").addEventListener("click", () => {
+   const mediaSalarial = funcionarios.reduce((soma, funcionario) => soma + parseInt(funcionario.salario), 0) / funcionarios.length;
+   exibirRelatorio("Media Salarial:", `A média salarial é: R$ ${mediaSalarial.toFixed(2)}`)
+})
+
+//listar apenas os cargos únicos (sem repetição)
+document.getElementById("btn_cargosUnicos").addEventListener("click", () => {
+   const cargosUnicos = [...new Set(funcionarios.map(funcionario => funcionario.getCargo()))];
+   exibirRelatorio("Cargos Únicos:", cargosUnicos.join("<br>"))
+})
+
+//criar uma lista de nomes em maiúsculo
+document.getElementById("btn_nomesMaiusculo").addEventListener("click", () => {
+   const nomesMaiusculo = funcionarios.map(funcionario => funcionario.getNome().toUpperCase());
+   exibirRelatorio("Nomes em maiúsculo:", nomesMaiusculo.join("<br>"))
+})
+
+// Exibir relatório
+const exibirRelatorio = (titulo, conteudo) => {
+   relatorioDiv.innerHTML = `<h2>${titulo}</h2><p>${conteudo}</p>`;
+};
