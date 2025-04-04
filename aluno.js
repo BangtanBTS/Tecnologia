@@ -10,12 +10,12 @@ class Aluno {
        return this.notaFinal >= 7;
    }
 
-   toString() {
+   toString = () => {
        return `Nome: ${this.nome}, Idade: ${this.idade}, Curso: ${this.curso}, Nota Final: ${this.notaFinal}`;
    }
 }
 
-document.getElementById('formulario-aluno').addEventListener('submit', function(event) {
+document.getElementById('formulario-aluno').addEventListener('submit', (event) => {
    event.preventDefault();
 
    const nome = document.getElementById('nome').value;
@@ -23,21 +23,24 @@ document.getElementById('formulario-aluno').addEventListener('submit', function(
    const curso = document.getElementById('curso').value;
    const nota = document.getElementById('nota').value;
 
-   // Criando uma instância da classe Aluno
+   // criando uma instância da classe Aluno
    const aluno = new Aluno(nome, idade, curso, nota);
    alunos.push(aluno);
 
    atualizarTabela();
 
    document.getElementById('formulario-aluno').reset(); // limpa o formulário
+
+   // exibe mensagem após salvar aluno
+   console.log(`Aluno ${aluno.nome} cadastrado com sucesso!`);
 });
 
 let alunos = [];
 
-// Exibir a tabela de alunos
-function atualizarTabela() {
+// exibir a tabela de alunos
+const atualizarTabela = () => {
    const tabela = document.getElementById('tabela-aluno').getElementsByTagName('tbody')[0];
-   tabela.innerHTML = ''; // limpa a tabela antes de adicionar os novos dados
+   tabela.innerHTML = ""; 
 
    alunos.forEach((aluno, index) => {
        const row = tabela.insertRow();
@@ -58,22 +61,13 @@ function atualizarTabela() {
 
 function adicionarEventosBotao() {
    // editar
-   const botaoEditar = document.querySelectorAll('.editar-btn');
-   botaoEditar.forEach(botao => {
-       botao.addEventListener('click', function() {
-           const index = botao.getAttribute('data-index');
-           editarAluno(index);
-       });
-   });
-
-   // excluir
-   const botaoExcluir = document.querySelectorAll('.excluir-btn');
-   botaoExcluir.forEach(botao => {
-       botao.addEventListener('click', function() {
-           const index = botao.getAttribute('data-index');
-           excluirAluno(index);
-       });
-   });
+   document.querySelectorAll(".editar-btn").forEach(btn => 
+      btn.addEventListener("click", (event) => editarAluno(event.target.dataset.index))
+   );
+   //excluir
+   document.querySelectorAll(".excluir-btn").forEach(btn => 
+      btn.addEventListener("click", (event) => excluirAluno(event.target.dataset.index))
+   );
 }
 
 // função para editar um aluno
@@ -89,10 +83,18 @@ function editarAluno(index) {
    // remove o aluno da lista para poder editar
    alunos.splice(index, 1);
    atualizarTabela();
+
+   // mensagem após editar
+   alert(`Aluno ${aluno.nome} editado com sucesso!`);
 }
 
 // função para excluir um aluno
 function excluirAluno(index) {
+   const aluno = alunos[index];
+
    alunos.splice(index, 1);
    atualizarTabela();
+
+   // mensagem após excluir
+   alert(`Aluno ${aluno.nome} excluído com sucesso!`);
 }
