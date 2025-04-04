@@ -115,7 +115,6 @@ const excluirFuncionario = (index) => {
    atualizaTabela(); 
 }
 
-//Relatorio
 const relatorioDiv = document.getElementById("relatorio");
 
 //listar todos os funcionários com salário maior que R$ 5000
