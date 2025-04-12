@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="./css/bootstrap.min.css" />
+  <title>Pagamento</title>
+  <style>
+    #qrcode {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <!-- NAV -->
+  <div class="container-fluid bg-dark py-2">
+    <ul class="nav justify-content-end">
+      <li class="nav-item"><a class="nav-link text-white" href="./Home.html">Home</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./CadastroSalas.html">Cadastrar Salas</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./CadastroFilmes.html">Cadastrar Filmes</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./CadastroSessoes.html">Cadastrar Sessões</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./ComprarIngressos.html">Comprar Ingressos</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./ListaSensoesDisponivel.html">Sessões Disponíveis</a></li>
+      <li class="nav-item"><a class="nav-link disabled text-secondary">Login</a></li>
+    </ul>
+  </div>
+
+  <div class="container mt-4">
+    <h3>Resumo do Ingresso</h3>
+    <div id="resumo" class="mb-4"></div>
+    <div id="qrcode"></div>
+    <a href="./Home.html" class="btn btn-primary mt-4">Voltar para Home</a>
+  </div>
+
+  <!-- QRCode.js -->
+  <script src="./js/qrcode.min.js"></script>
+  <script>
+    const ingresso = JSON.parse(localStorage.getItem("ingressoSelecionado") || "{}");
+    const sessoes = JSON.parse(localStorage.getItem("sessoes") || "[]");
+    const filmes = JSON.parse(localStorage.getItem("filmes") || "[]");
+    const salas = JSON.parse(localStorage.getItem("salas") || "[]");
+
+    const sessao = sessoes.find(s => s.id === ingresso.sessaoId);
+    const filme = filmes.find(f => f.id === sessao?.filmeId);
+    const sala = salas.find(s => s.id === sessao?.salaId);
+
+    const precoIngresso = parseFloat(sessao?.preco || 0);
+    const qtdAssentos = ingresso.assentos?.length || 0;
+    const total = precoIngresso * qtdAssentos;
+
+    const resumo = document.getElementById("resumo");
+    resumo.innerHTML = `
+      <p><strong>Filme:</strong> ${filme?.titulo || "-"}</p>
+      <p><strong>Cliente:</strong> ${ingresso.nome || "-"}</p>
+      <p><strong>CPF:</strong> ${ingresso.cpf || "-"}</p>
+      <p><strong>Sala:</strong> ${sala?.nome || "-"}</p>
+      <p><strong>Data e Hora:</strong> ${new Date(sessao?.dataHora).toLocaleString("pt-BR")}</p>
+      <p><strong>Assentos:</strong> ${ingresso.assentos?.join(", ")}</p>
+      <p><strong>Pagamento:</strong> ${ingresso.pagamento}</p>
+      <p><strong>Total a Pagar:</strong> R$ ${total.toFixed(2)}</p>
+    `;
+
+    const textoQRCode = `
+      Filme: ${filme?.titulo}
+      Cliente: ${ingresso.nome}
+      CPF: ${ingresso.cpf}
+      Sala: ${sala?.nome}
+      Data: ${new Date(sessao?.dataHora).toLocaleDateString("pt-BR")}
+      Hora: ${new Date(sessao?.dataHora).toLocaleTimeString("pt-BR")}
+      Assentos: ${ingresso.assentos?.join(", ")}
+      Pagamento: ${ingresso.pagamento}
+      Total: R$ ${total.toFixed(2)}
+    `;
+
+    new QRCode(document.getElementById("qrcode"), {
+      text: textoQRCode,
+      width: 180,
+      height: 180,
+    });
+  </script>
+
+  <script src="./js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

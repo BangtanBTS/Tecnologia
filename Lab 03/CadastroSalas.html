@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./css/bootstrap.min.css">
+  <title>Cadastro de Salas</title>
+</head>
+<body>
+  <div class="container-fluid bg-dark py-2">
+    <ul class="nav justify-content-end">
+      <li class="nav-item"><a class="nav-link text-white" href="./Home.html">Home</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./CadastroSalas.html">Cadastrar Salas</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./CadastroFilmes.html">Cadastrar Filmes</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./CadastroSessoes.html">Cadastrar Sessões</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./ComprarIngressos.html">Comprar Ingressos</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./ListaSensoesDisponivel.html">Sessões Disponíveis</a></li>
+      <li class="nav-item"><a class="nav-link disabled text-secondary">Login</a></li>
+    </ul>
+  </div>
+
+  <div class="container mt-4">
+    <h3>Cadastrar Sala</h3>
+    <form id="formSala">
+      <input type="hidden" id="idSala">
+      <div class="mb-2">
+        <input type="text" id="nomeSala" class="form-control" placeholder="Nome da Sala" required>
+      </div>
+      <div class="mb-2">
+        <input type="number" id="capacidadeSala" class="form-control" placeholder="Capacidade" required>
+      </div>
+      <div class="mb-2">
+        <select id="tipoSala" class="form-select" required>
+          <option value="">Tipo</option>
+          <option value="2D">2D</option>
+          <option value="3D">3D</option>
+          <option value="IMAX">IMAX</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-success">Salvar Sala</button>
+    </form>
+
+    <hr>
+    <h4>Salas Cadastradas</h4>
+    <ul id="listaSalas" class="list-group mt-3"></ul>
+  </div>
+
+  <script>
+    let salas = JSON.parse(localStorage.getItem("salas") || "[]");
+
+    const form = document.getElementById("formSala");
+    const lista = document.getElementById("listaSalas");
+
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+      const id = document.getElementById("idSala").value;
+      const nome = document.getElementById("nomeSala").value;
+      const capacidade = document.getElementById("capacidadeSala").value;
+      const tipo = document.getElementById("tipoSala").value;
+
+      if (id) {
+        const index = salas.findIndex(s => s.id == id);
+        salas[index] = { id: parseInt(id), nome, capacidade, tipo };
+      } else {
+        salas.push({ id: Date.now(), nome, capacidade, tipo });
+      }
+
+      localStorage.setItem("salas", JSON.stringify(salas));
+      atualizarLista();
+      form.reset();
+    });
+
+    function atualizarLista() {
+      lista.innerHTML = "";
+      salas.forEach(s => {
+        const li = document.createElement("li");
+        li.className = "list-group-item d-flex justify-content-between align-items-center";
+        li.innerHTML = `
+          <span>${s.nome} - ${s.capacidade} lugares - ${s.tipo}</span>
+          <div>
+            <button class="btn btn-warning btn-sm me-1" onclick="editarSala(${s.id})">Editar</button>
+            <button class="btn btn-danger btn-sm" onclick="excluirSala(${s.id})">Excluir</button>
+          </div>
+        `;
+        lista.appendChild(li);
+      });
+    }
+
+    function editarSala(id) {
+      const sala = salas.find(s => s.id === id);
+      document.getElementById("idSala").value = sala.id;
+      document.getElementById("nomeSala").value = sala.nome;
+      document.getElementById("capacidadeSala").value = sala.capacidade;
+      document.getElementById("tipoSala").value = sala.tipo;
+    }
+
+    function excluirSala(id) {
+      if (confirm("Deseja excluir esta sala?")) {
+        salas = salas.filter(s => s.id !== id);
+        localStorage.setItem("salas", JSON.stringify(salas));
+        atualizarLista();
+      }
+    }
+
+    atualizarLista();
+  </script>
+</body>
+</html>

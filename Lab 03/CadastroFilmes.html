@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="./css/bootstrap.min.css"/>
+  <title>Cadastro de Filmes</title>
+</head>
+<body>
+  <div class="container-fluid bg-dark py-2">
+    <ul class="nav justify-content-end">
+      <li class="nav-item"><a class="nav-link text-white" href="./Home.html">Home</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./CadastroSalas.html">Cadastrar Salas</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./CadastroFilmes.html">Cadastrar Filmes</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./CadastroSessoes.html">Cadastrar Sessões</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./ComprarIngressos.html">Comprar Ingressos</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./ListaSensoesDisponivel.html">Sessões Disponíveis</a></li>
+      <li class="nav-item"><a class="nav-link disabled text-secondary">Login</a></li>
+    </ul>
+  </div>
+
+  <div class="container mt-4">
+    <h3>Cadastrar Filme</h3>
+    <form id="formFilme" class="mb-5">
+      <input type="hidden" id="idFilme">
+      <div class="mb-3">
+        <input type="text" class="form-control" id="titulo" placeholder="Título" required>
+      </div>
+      <div class="mb-3">
+        <textarea class="form-control" id="descricao" placeholder="Descrição" required></textarea>
+      </div>
+      <div class="mb-3">
+        <select class="form-select" id="genero" required>
+          <option value="">Gênero</option>
+          <option>Ação</option>
+          <option>Comédia</option>
+          <option>Drama</option>
+          <option>Terror</option>
+          <option>Romance</option>
+          <option>Fantasia</option>
+          <option>Ficção Científica</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <select class="form-select" id="classificacao" required>
+          <option value="">Classificação</option>
+          <option>Livre</option>
+          <option>10</option>
+          <option>12</option>
+          <option>14</option>
+          <option>16</option>
+          <option>18</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <input type="number" class="form-control" id="duracao" placeholder="Duração (min)" required>
+      </div>
+      <div class="mb-3">
+        <input type="date" class="form-control" id="dataEstreia" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Imagem do Filme</label>
+        <input type="file" class="form-control" id="imagem" accept="image/*">
+      </div>
+      <button type="submit" class="btn btn-primary">Salvar Filme</button>
+    </form>
+
+    <h4>Filmes Cadastrados</h4>
+    <div class="row" id="listaFilmes"></div>
+  </div>
+
+  <script>
+    let filmes = JSON.parse(localStorage.getItem("filmes") || "[]");
+
+    const form = document.getElementById("formFilme");
+    const lista = document.getElementById("listaFilmes");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const id = document.getElementById("idFilme").value;
+      const titulo = document.getElementById("titulo").value;
+      const descricao = document.getElementById("descricao").value;
+      const genero = document.getElementById("genero").value;
+      const classificacao = document.getElementById("classificacao").value;
+      const duracao = document.getElementById("duracao").value;
+      const dataEstreia = document.getElementById("dataEstreia").value;
+      const inputImg = document.getElementById("imagem");
+
+      let imagemBase64 = "";
+
+      if (inputImg.files.length > 0) {
+        imagemBase64 = await toBase64(inputImg.files[0]);
+      } else if (id) {
+        const f = filmes.find(f => f.id == id);
+        imagemBase64 = f.imagem;
+      }
+
+      const filme = {
+        id: id ? parseInt(id) : Date.now(),
+        titulo,
+        descricao,
+        genero,
+        classificacao,
+        duracao,
+        dataEstreia,
+        imagem: imagemBase64
+      };
+
+      if (id) {
+        const index = filmes.findIndex(f => f.id == id);
+        filmes[index] = filme;
+      } else {
+        filmes.push(filme);
+      }
+
+      localStorage.setItem("filmes", JSON.stringify(filmes));
+      form.reset();
+      document.getElementById("idFilme").value = "";
+      renderizarFilmes();
+    });
+
+    function renderizarFilmes() {
+      lista.innerHTML = "";
+      filmes.forEach(filme => {
+        const col = document.createElement("div");
+        col.className = "col-md-4 mb-4";
+
+        col.innerHTML = `
+          <div class="card h-100">
+            <img src="${filme.imagem}" class="card-img-top" style="height:300px; object-fit:cover">
+            <div class="card-body">
+              <h5 class="card-title">${filme.titulo}</h5>
+              <p class="card-text">${filme.descricao}</p>
+              <p><strong>${filme.genero}</strong> | ${filme.duracao} min | ${filme.classificacao}</p>
+              <p>Estreia: ${new Date(filme.dataEstreia).toLocaleDateString("pt-BR")}</p>
+              <button class="btn btn-warning btn-sm me-2" onclick="editar(${filme.id})">Editar</button>
+              <button class="btn btn-danger btn-sm" onclick="excluir(${filme.id})">Excluir</button>
+            </div>
+          </div>
+        `;
+        lista.appendChild(col);
+      });
+    }
+
+    function editar(id) {
+      const filme = filmes.find(f => f.id === id);
+      document.getElementById("idFilme").value = filme.id;
+      document.getElementById("titulo").value = filme.titulo;
+      document.getElementById("descricao").value = filme.descricao;
+      document.getElementById("genero").value = filme.genero;
+      document.getElementById("classificacao").value = filme.classificacao;
+      document.getElementById("duracao").value = filme.duracao;
+      document.getElementById("dataEstreia").value = filme.dataEstreia;
+    }
+
+    function excluir(id) {
+      if (confirm("Deseja excluir este filme?")) {
+        filmes = filmes.filter(f => f.id !== id);
+        localStorage.setItem("filmes", JSON.stringify(filmes));
+        renderizarFilmes();
+      }
+    }
+
+    function toBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+      });
+    }
+
+    renderizarFilmes();
+  </script>
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="./css/bootstrap.min.css" />
+  <title>Cadastro de Sessões</title>
+</head>
+<body>
+  <div class="container-fluid bg-dark py-2">
+    <ul class="nav justify-content-end">
+      <li class="nav-item"><a class="nav-link text-white" href="./Home.html">Home</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./CadastroSalas.html">Cadastrar Salas</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./CadastroFilmes.html">Cadastrar Filmes</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./CadastroSessoes.html">Cadastrar Sessões</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./ComprarIngressos.html">Comprar Ingressos</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./ListaSensoesDisponivel.html">Sessões Disponíveis</a></li>
+      <li class="nav-item"><a class="nav-link disabled text-secondary">Login</a></li>
+    </ul>
+  </div>
+
+  <div class="container mt-4">
+    <h3>Cadastrar Sessão</h3>
+    <form id="formSessao">
+      <input type="hidden" id="idSessao">
+      <div class="mb-2">
+        <label class="form-label">Filme:</label>
+        <select id="filmeSessao" class="form-select" required>
+          <option value="">Selecione um filme</option>
+        </select>
+      </div>
+      <div class="mb-2">
+        <label class="form-label">Sala:</label>
+        <select id="salaSessao" class="form-select" required>
+          <option value="">Selecione uma sala</option>
+        </select>
+      </div>
+      <div class="mb-2">
+        <label class="form-label">Data e Hora:</label>
+        <input type="datetime-local" id="dataHora" class="form-control" required />
+      </div>
+      <div class="mb-2">
+        <label class="form-label">Idioma:</label>
+        <select id="idioma" class="form-select" required>
+          <option value="">Selecione</option>
+          <option value="Dublado">Dublado</option>
+          <option value="Legendado">Legendado</option>
+        </select>
+      </div>
+      <div class="mb-2">
+        <label class="form-label">Formato:</label>
+        <select id="formato" class="form-select" required>
+          <option value="">Selecione</option>
+          <option value="2D">2D</option>
+          <option value="3D">3D</option>
+        </select>
+      </div>
+      <div class="mb-2">
+        <label class="form-label">Preço:</label>
+        <input type="number" id="preco" class="form-control" placeholder="R$" required>
+      </div>
+      <button type="submit" class="btn btn-success">Salvar Sessão</button>
+    </form>
+
+    <hr />
+    <h4>Sessões Cadastradas</h4>
+    <ul id="listaSessoes" class="list-group mt-3"></ul>
+  </div>
+
+  <script>
+    // Recupera os dados armazenados no localStorage
+    let filmes = JSON.parse(localStorage.getItem("filmes") || "[]");
+    let salas = JSON.parse(localStorage.getItem("salas") || "[]");
+    let sessoes = JSON.parse(localStorage.getItem("sessoes") || "[]");
+
+    // Seleciona os elementos do DOM
+    const filmeSelect = document.getElementById("filmeSessao");
+    const salaSelect = document.getElementById("salaSessao");
+    const listaSessoes = document.getElementById("listaSessoes");
+
+    // Função para carregar os filmes
+    function carregarFilmes() {
+      if (filmes.length === 0) {
+        const opt = document.createElement("option");
+        opt.value = "";
+        opt.textContent = "Nenhum filme cadastrado";
+        filmeSelect.appendChild(opt);
+      } else {
+        filmes.forEach(f => {
+          const opt = document.createElement("option");
+          opt.value = f.id;
+          opt.textContent = f.titulo;
+          filmeSelect.appendChild(opt);
+        });
+      }
+    }
+
+    // Função para carregar as salas
+    function carregarSalas() {
+      if (salas.length === 0) {
+        const opt = document.createElement("option");
+        opt.value = "";
+        opt.textContent = "Nenhuma sala cadastrada";
+        salaSelect.appendChild(opt);
+      } else {
+        salas.forEach(s => {
+          const opt = document.createElement("option");
+          opt.value = s.id;
+          opt.textContent = s.nome;
+          salaSelect.appendChild(opt);
+        });
+      }
+    }
+
+    // Evento de submissão do formulário de cadastro de sessão
+    document.getElementById("formSessao").addEventListener("submit", e => {
+      e.preventDefault();
+
+      const novaSessao = {
+        filmeId: parseInt(filmeSelect.value),
+        salaId: parseInt(salaSelect.value),
+        dataHora: document.getElementById("dataHora").value,
+        idioma: document.getElementById("idioma").value,
+        formato: document.getElementById("formato").value,
+        preco: parseFloat(document.getElementById("preco").value)
+      };
+
+      const idSessao = document.getElementById("idSessao").value;
+      if (idSessao) {
+        const index = sessoes.findIndex(s => s.id == idSessao);
+        sessoes[index] = { ...novaSessao, id: parseInt(idSessao) };
+      } else {
+        sessoes.push({ ...novaSessao, id: Date.now() });
+      }
+
+      localStorage.setItem("sessoes", JSON.stringify(sessoes));
+      exibirSessoes();
+      e.target.reset();
+    });
+
+    // Função para exibir as sessões cadastradas
+    function exibirSessoes() {
+      listaSessoes.innerHTML = "";
+      sessoes.forEach(s => {
+        const filme = filmes.find(f => f.id === s.filmeId);
+        const sala = salas.find(sa => sa.id === s.salaId);
+        const li = document.createElement("li");
+        li.className = "list-group-item d-flex justify-content-between align-items-center";
+        li.innerHTML = `
+          <span>
+            <strong>${filme?.titulo || "Filme apagado"}</strong> - ${sala?.nome || "Sala apagada"} - ${new Date(s.dataHora).toLocaleString("pt-BR")} 
+            (${s.idioma}, ${s.formato}, R$${s.preco.toFixed(2)})
+          </span>
+          <div>
+            <button class="btn btn-warning btn-sm me-1" onclick="editarSessao(${s.id})">Editar</button>
+            <button class="btn btn-danger btn-sm" onclick="excluirSessao(${s.id})">Excluir</button>
+          </div>
+        `;
+        listaSessoes.appendChild(li);
+      });
+    }
+
+    // Função para editar uma sessão
+    function editarSessao(id) {
+      const sessao = sessoes.find(s => s.id === id);
+      document.getElementById("idSessao").value = sessao.id;
+      document.getElementById("filmeSessao").value = sessao.filmeId;
+      document.getElementById("salaSessao").value = sessao.salaId;
+      document.getElementById("dataHora").value = sessao.dataHora;
+      document.getElementById("idioma").value = sessao.idioma;
+      document.getElementById("formato").value = sessao.formato;
+      document.getElementById("preco").value = sessao.preco;
+    }
+
+    // Função para excluir uma sessão
+    function excluirSessao(id) {
+      if (confirm("Deseja excluir esta sessão?")) {
+        sessoes = sessoes.filter(s => s.id !== id);
+        localStorage.setItem("sessoes", JSON.stringify(sessoes));
+        exibirSessoes();
+      }
+    }
+
+    // Inicializa os dados e exibe as sessões cadastradas
+    carregarFilmes();
+    carregarSalas();
+    exibirSessoes();
+  </script>
+</body>
+</html>

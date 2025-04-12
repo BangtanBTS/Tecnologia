@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="./css/bootstrap.min.css" />
+  <title>Home - Cinema</title>
+</head>
+<body>
+  <!-- MENU -->
+  <div class="container-fluid bg-dark py-2">
+    <ul class="nav justify-content-end">
+      <li class="nav-item"><a class="nav-link text-white" href="./Home.html">Home</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./CadastroSalas.html">Cadastrar Salas</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./CadastroFilmes.html">Cadastra Filmes</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./CadastroSessoes.html">Cadastrar Sessões</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./ComprarIngressos.html">Comprar Ingressos</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./ListaSensoesDisponivel.html">Sessões Disponíveis</a></li>
+      <li class="nav-item"><a class="nav-link disabled text-secondary" href="#">Login</a></li>
+    </ul>
+  </div>
+
+  <div class="container mt-4">
+    <h3>Filmes em Exibição</h3>
+    <div id="filmesContainer" class="row mt-4"></div>
+  </div>
+
+  <script>
+    const filmes = JSON.parse(localStorage.getItem("filmes") || "[]");
+    const sessoes = JSON.parse(localStorage.getItem("sessoes") || "[]");
+    const salas = JSON.parse(localStorage.getItem("salas") || "[]");
+    const container = document.getElementById("filmesContainer");
+
+    filmes.forEach(filme => {
+      const sessoesDoFilme = sessoes.filter(s => s.filmeId === filme.id);
+      if (sessoesDoFilme.length === 0) return;
+
+      const col = document.createElement("div");
+      col.className = "col-12 col-md-6 col-lg-4 mb-4";
+
+      const card = document.createElement("div");
+      card.className = "card h-100 shadow";
+
+      const img = document.createElement("img");
+      img.className = "card-img-top";
+      img.src = filme.imagem || "./img/sem-capa.jpg";
+      img.alt = filme.titulo;
+
+      const body = document.createElement("div");
+      body.className = "card-body";
+
+      const titulo = document.createElement("h5");
+      titulo.className = "card-title";
+      titulo.textContent = filme.titulo;
+
+      const detalhes = document.createElement("div");
+
+      sessoesDoFilme.forEach(sessao => {
+        const sala = salas.find(s => s.id === sessao.salaId);
+        const info = document.createElement("p");
+        info.innerHTML = `
+          <strong>Sala:</strong> ${sala?.nome || "-"}<br>
+          <strong>Data:</strong> ${new Date(sessao.dataHora).toLocaleDateString("pt-BR")}<br>
+          <strong>Hora:</strong> ${new Date(sessao.dataHora).toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' })}
+        `;
+        detalhes.appendChild(info);
+      });
+
+      const btn = document.createElement("button");
+      btn.className = "btn btn-primary mt-2";
+      btn.textContent = "Comprar Ingresso";
+      btn.onclick = () => {
+        localStorage.setItem("filmeSelecionado", filme.id);
+        localStorage.removeItem("sessaoSelecionada"); // limpa para garantir que será escolhido depois
+        window.location.href = "ComprarIngressos.html";
+      };
+
+      body.appendChild(titulo);
+      body.appendChild(detalhes);
+      body.appendChild(btn);
+      card.appendChild(img);
+      card.appendChild(body);
+      col.appendChild(card);
+      container.appendChild(col);
+    });
+  </script>
+
+  <script src="./js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

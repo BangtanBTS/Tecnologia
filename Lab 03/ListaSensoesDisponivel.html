@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="./css/bootstrap.min.css" />
+  <title>Lista de Sessões Disponíveis</title>
+</head>
+<body>
+  <div class="container-fluid bg-dark py-2">
+    <ul class="nav justify-content-end">
+      <li class="nav-item"><a class="nav-link text-white" href="./Home.html">Home</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./CadastroSalas.html">Cadastrar Salas</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./CadastroFilmes.html">Cadastrar Filmes</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./CadastroSessoes.html">Cadastrar Sessões</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./ComprarIngressos.html">Comprar Ingressos</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./ListaSensoesDisponivel.html">Sessões Disponíveis</a></li>
+      <li class="nav-item"><a class="nav-link disabled text-secondary">Login</a></li>
+    </ul>
+  </div>
+
+  <div class="container mt-4">
+    <h4>Listagem de Sessões Disponíveis</h4>
+    <ul id="listaDisponiveis" class="list-group mt-3"></ul>
+  </div>
+
+  <script>
+    // Recupera os dados armazenados no localStorage
+    let filmes = JSON.parse(localStorage.getItem("filmes") || "[]");
+    let salas = JSON.parse(localStorage.getItem("salas") || "[]");
+    let sessoes = JSON.parse(localStorage.getItem("sessoes") || "[]");
+
+    const listaDisponiveis = document.getElementById("listaDisponiveis");
+
+    // Função para exibir as sessões disponíveis para compra
+    function exibirDisponiveis() {
+      listaDisponiveis.innerHTML = "";
+      sessoes.forEach(s => {
+        const filme = filmes.find(f => f.id === s.filmeId);
+        const sala = salas.find(sa => sa.id === s.salaId);
+        const li = document.createElement("li");
+        li.className = "list-group-item d-flex justify-content-between align-items-center";
+        li.innerHTML = `
+          <span>
+            <strong>${filme?.titulo || "-"}</strong> - Sala: ${sala?.nome || "-"} - ${new Date(s.dataHora).toLocaleString("pt-BR")} - R$${s.preco.toFixed(2)}
+          </span>
+          <button class="btn btn-primary btn-sm" onclick="comprar(${s.id})">Comprar Ingresso</button>
+        `;
+        listaDisponiveis.appendChild(li);
+      });
+    }
+
+    // Função para direcionar o usuário à página de compra de ingressos
+    function comprar(idSessao) {
+      localStorage.setItem("sessaoSelecionada", idSessao);
+      localStorage.removeItem("filmeSelecionado"); // Previne conflito com seleção anterior
+      window.location.href = "ComprarIngressos.html";
+    }
+
+    // Inicializa a exibição das sessões disponíveis
+    exibirDisponiveis();
+  </script>
+</body>
+</html>

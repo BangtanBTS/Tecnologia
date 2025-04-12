@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="./css/bootstrap.min.css" />
+  <title>Compra de Ingressos</title>
+  <style>
+    .assento {
+      width: 30px;
+      height: 30px;
+      margin: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      background-color: #e9ecef;
+      cursor: pointer;
+      position: relative;
+    }
+    .assento:hover::after {
+      content: attr(data-assento);
+      position: absolute;
+      top: -25px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: black;
+      color: white;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .selecionado {
+      background-color: #198754 !important;
+      color: white;
+    }
+    .ocupado {
+      background-color: #dc3545 !important;
+      color: white;
+      cursor: not-allowed;
+    }
+    .tela {
+      background-color: #212529;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <!-- NAV -->
+  <div class="container-fluid bg-dark py-2">
+    <ul class="nav justify-content-end">
+      <li class="nav-item"><a class="nav-link text-white" href="./Home.html">Home</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./CadastroSalas.html">Cadastrar Salas</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./CadastroFilmes.html">Cadastrar Filmes</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./CadastroSessoes.html">Cadastrar Sessões</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./ComprarIngressos.html">Comprar Ingressos</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="./ListaSensoesDisponivel.html">Sessões Disponíveis</a></li>
+      <li class="nav-item"><a class="nav-link disabled text-secondary">Login</a></li>
+    </ul>
+  </div>
+
+  <div class="container mt-4">
+    <h3>Compra de Ingressos</h3>
+    <p id="tituloFilme" class="mb-4 fs-5 fw-bold text-primary"></p>
+
+    <div class="mb-3">
+      <label for="sessaoSelect" class="form-label">Escolha a Sessão:</label>
+      <select id="sessaoSelect" class="form-select"></select>
+    </div>
+
+    <div class="tela">TELA</div>
+    <div class="d-flex flex-wrap" id="assentosContainer"></div>
+
+    <!-- Nome e CPF -->
+    <div class="row mt-4">
+      <div class="col-md-6 mb-3">
+        <label for="nomeCliente" class="form-label">Nome do Cliente:</label>
+        <input type="text" id="nomeCliente" class="form-control" placeholder="Digite seu nome completo" required>
+      </div>
+      <div class="col-md-6 mb-3">
+        <label for="cpfCliente" class="form-label">CPF:</label>
+        <input type="text" id="cpfCliente" class="form-control" placeholder="Digite seu CPF" required>
+      </div>
+    </div>
+
+    <!-- Pagamento -->
+    <div class="mb-3">
+      <label for="formaPagamento" class="form-label">Forma de Pagamento:</label>
+      <select id="formaPagamento" class="form-select">
+        <option value="">Selecione...</option>
+        <option value="cartao">Cartão</option>
+        <option value="pix">Pix</option>
+        <option value="dinheiro">Dinheiro</option>
+      </select>
+    </div>
+
+    <button id="btnConfirmar" class="btn btn-success">Confirmar Compra</button>
+  </div>
+
+  <script>
+    const sessoes = JSON.parse(localStorage.getItem("sessoes") || "[]");
+    const filmes = JSON.parse(localStorage.getItem("filmes") || "[]");
+    const salas = JSON.parse(localStorage.getItem("salas") || "[]");
+    const ingressos = JSON.parse(localStorage.getItem("ingressos") || "[]");
+
+    let filmeId = parseInt(localStorage.getItem("filmeSelecionado"));
+    let sessoesFilme = [];
+
+    if (!filmeId) {
+      const sessaoId = parseInt(localStorage.getItem("sessaoSelecionada"));
+      const sessao = sessoes.find(s => s.id === sessaoId);
+      if (sessao) {
+        filmeId = sessao.filmeId;
+        sessoesFilme = sessoes.filter(s => s.filmeId === filmeId);
+      }
+    } else {
+      sessoesFilme = sessoes.filter(s => s.filmeId === filmeId);
+    }
+
+    const filme = filmes.find(f => f.id === filmeId);
+    const selectSessao = document.getElementById("sessaoSelect");
+    const assentosContainer = document.getElementById("assentosContainer");
+    const tituloFilme = document.getElementById("tituloFilme");
+
+    if (filme) {
+      tituloFilme.textContent = `Filme selecionado: ${filme.titulo}`;
+    }
+
+    if (!filme || sessoesFilme.length === 0) {
+      selectSessao.innerHTML = "<option>Não há sessões disponíveis</option>";
+    } else {
+      selectSessao.innerHTML = '<option value="">Selecione...</option>';
+      sessoesFilme.forEach(sessao => {
+        const sala = salas.find(s => s.id === sessao.salaId);
+        const opt = document.createElement("option");
+        opt.value = sessao.id;
+        opt.textContent = `${new Date(sessao.dataHora).toLocaleDateString("pt-BR")} - ${new Date(sessao.dataHora).toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' })} | Sala: ${sala?.nome} (${sessao.idioma} - ${sessao.formato})`;
+        selectSessao.appendChild(opt);
+      });
+
+      const sessaoSelecionada = localStorage.getItem("sessaoSelecionada");
+      if (sessaoSelecionada) {
+        selectSessao.value = sessaoSelecionada;
+        const event = new Event("change");
+        selectSessao.dispatchEvent(event);
+        localStorage.removeItem("sessaoSelecionada");
+      }
+    }
+
+    selectSessao.addEventListener("change", () => {
+      assentosContainer.innerHTML = "";
+      const sessaoId = parseInt(selectSessao.value);
+      const ocupados = ingressos.filter(i => i.sessaoId === sessaoId).flatMap(i => i.assentos);
+
+      const linhas = "ABCDEFGHIJKL";
+      for (let l of linhas) {
+        for (let i = 1; i <= 12; i++) {
+          const cod = `${l}${i}`;
+          const btn = document.createElement("div");
+          btn.className = "assento";
+          btn.setAttribute("data-assento", cod);
+
+          if (ocupados.includes(cod)) {
+            btn.classList.add("ocupado");
+          } else {
+            btn.onclick = () => btn.classList.toggle("selecionado");
+          }
+
+          assentosContainer.appendChild(btn);
+        }
+        assentosContainer.appendChild(document.createElement("br"));
+      }
+    });
+
+    document.getElementById("btnConfirmar").addEventListener("click", () => {
+      const sessaoId = parseInt(selectSessao.value);
+      const pagamento = document.getElementById("formaPagamento").value;
+      const nome = document.getElementById("nomeCliente").value.trim();
+      const cpf = document.getElementById("cpfCliente").value.trim();
+      const assentos = [...document.querySelectorAll(".assento.selecionado")].map(a => a.getAttribute("data-assento"));
+
+      if (!sessaoId || !pagamento || assentos.length === 0 || !nome || !cpf) {
+        alert("Preencha todos os campos corretamente.");
+        return;
+      }
+
+      const novo = {
+        sessaoId,
+        pagamento,
+        assentos,
+        nome,
+        cpf
+      };
+
+      localStorage.setItem("ingressoSelecionado", JSON.stringify(novo));
+
+      const todos = JSON.parse(localStorage.getItem("ingressos") || "[]");
+      todos.push(novo);
+      localStorage.setItem("ingressos", JSON.stringify(todos));
+
+      window.location.href = "ResumoDePagamento.html";
+    });
+  </script>
+
+  <script src="./js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
