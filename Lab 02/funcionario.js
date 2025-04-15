@@ -119,7 +119,7 @@ const relatorioDiv = document.getElementById("relatorio");
 
 //listar todos os funcionários com salário maior que R$ 5000
 document.getElementById("btn_salarioMaiorQue5000").addEventListener("click", () => {
-   const salarioMaiorQue5000 = funcionarios.filter(funcionarios => funcionarios.getSalario() > 5000);
+   const salarioMaiorQue5000 = funcionarios.filter(funcionarios => funcionarios.getSalario() >= 5000);
    exibirRelatorio("Funcionarios com salário maior que 5000:", salarioMaiorQue5000.map(funcionarios => funcionarios.nome).join("<br>"))
 })
 
